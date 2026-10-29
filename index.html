@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#0f172a" />
+        <meta name="application-name" content="SocketLab" />
+        <meta
+            name="description"
+            content="SocketLab is a browser-based WebSocket debugging toolkit for testing, inspecting, and troubleshooting real-time connections with ws:// and wss:// endpoints." />
+        <meta
+            name="keywords"
+            content="WebSocket client, WebSocket debugger, websocket testing tool, realtime API tester, socket testing, ws client, wss client, socketlab" />
+        <meta name="robots" content="index,follow" />
+        <meta name="author" content="imdubaid" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="SocketLab · WebSocket Developer Toolkit" />
+        <meta
+            property="og:description"
+            content="Connect to WebSocket endpoints, send JSON and binary messages, inspect logs, and debug close codes in a lightweight browser tool." />
+        <meta property="og:url" content="https://imdubaid.github.io/socketlab/" />
+        <meta property="og:image" content="https://imdubaid.github.io/socketlab/static/favicon.svg" />
+        <meta property="og:site_name" content="SocketLab" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="SocketLab · WebSocket Developer Toolkit" />
+        <meta
+            name="twitter:description"
+            content="A lightweight browser-native WebSocket client for debugging realtime connections and message payloads." />
+        <meta name="twitter:image" content="https://imdubaid.github.io/socketlab/static/favicon.svg" />
+        <meta name="twitter:site" content="@imdubaid" />
+        <meta name="canonical" content="https://imdubaid.github.io/socketlab/" />
+        <title>SocketLab · WebSocket Developer Toolkit</title>
+        <link rel="icon" type="image/svg+xml" href="./static/favicon.svg" />
+        <link rel="apple-touch-icon" href="./static/favicon.svg" />
+        <link rel="canonical" href="https://imdubaid.github.io/socketlab/" />
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": "SocketLab",
+                "url": "https://imdubaid.github.io/socketlab/",
+                "description": "A browser-based WebSocket debugging toolkit for testing and inspecting websocket connections, messages, payloads, and close codes.",
+                "applicationCategory": "DeveloperApplication",
+                "operatingSystem": "Web",
+                "browserRequirements": "Requires modern web browser with WebSocket support",
+                "image": "https://imdubaid.github.io/socketlab/static/favicon.svg",
+                "creator": {
+                    "@type": "Person",
+                    "name": "imdubaid"
+                }
+            }
+        </script>
+        <link rel="stylesheet" href="./style.css" />
+    </head>
+    <body>
+        <div class="shell">
+            <header class="topbar">
+                <div class="brand">
+                    <div class="logo" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M8 7 3 12l5 5M16 7l5 5-5 5M14 4l-4 16" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="eyebrow">Developer toolkit / 01</div>
+                        <h1>SocketLab <span style="color: #7e8ba1; font-weight: 500">WebSocket Client</span></h1>
+                        <p>Connect, inspect, and debug realtime connections.</p>
+                    </div>
+                </div>
+                <div class="top-actions">
+                    <div class="pill"><span id="statusDot" class="dot"></span><span id="statusText">Disconnected</span></div>
+                    <div class="pill">Browser-native <span style="color: var(--cyan)">WebSocket</span></div>
+                </div>
+            </header>
+
+            <main class="layout">
+                <aside class="panel">
+                    <div class="panel-head">
+                        <h2>Connection setup</h2>
+                        <small>01 / CONNECT</small>
+                    </div>
+                    <div class="panel-body">
+                        <div class="field">
+                            <label for="url">WebSocket URL <span class="hint">ws:// or wss://</span></label>
+                            <div class="url-row">
+                                <input
+                                    id="url"
+                                    class="control"
+                                    spellcheck="false"
+                                    value="wss://echo.websocket.events"
+                                    placeholder="wss://api.example.com/socket" /><button
+                                    id="pasteUrl"
+                                    class="icon-btn"
+                                    title="Paste URL"
+                                    aria-label="Paste URL">
+                                    ↳
+                                </button>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="protocols">Subprotocols <span class="hint">Optional, comma-separated</span></label
+                            ><input id="protocols" class="control" placeholder="chat, graphql-transport-ws" />
+                        </div>
+                        <div class="field">
+                            <label for="params">Query parameters <span class="hint">One key=value per line</span></label
+                            ><textarea id="params" class="control" rows="2" placeholder="client=socketlab&#10;token=your-token"></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="headers">Extra headers <span class="hint">Browser limitation</span></label
+                            ><textarea
+                                id="headers"
+                                class="control"
+                                rows="2"
+                                placeholder="Authorization: Bearer ...&#10;Not sent by browser WebSocket API"
+                                disabled></textarea>
+                            <div class="footer-note">
+                                Browsers do not let JavaScript set arbitrary WebSocket handshake headers. Use query parameters or subprotocols only if
+                                your server supports them.
+                            </div>
+                        </div>
+                        <div class="connect-row">
+                            <button id="connectBtn" class="btn btn-primary">↗ Connect</button
+                            ><button id="disconnectBtn" class="btn btn-danger" disabled>■ Disconnect</button>
+                        </div>
+                        <div class="separator"></div>
+                        <div class="field-label">Connection options</div>
+                        <div class="mini-grid">
+                            <div class="field">
+                                <label for="binaryType">Binary receive</label
+                                ><select id="binaryType" class="control">
+                                    <option value="blob">Blob</option>
+                                    <option value="arraybuffer">ArrayBuffer</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="sendFormat">Default format</label
+                                ><select id="sendFormat" class="control">
+                                    <option value="text">Text</option>
+                                    <option value="json">JSON</option>
+                                    <option value="binary">Binary (UTF-8)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="toggle-row"><span>Auto-scroll logs</span><input id="autoScroll" class="toggle" type="checkbox" checked /></div>
+                        <div class="toggle-row">
+                            <span>Pretty-print JSON messages</span><input id="prettyJson" class="toggle" type="checkbox" checked />
+                        </div>
+                        <div class="toggle-row">
+                            <span>Log connection lifecycle</span><input id="lifecycle" class="toggle" type="checkbox" checked />
+                        </div>
+                        <div class="footer-note">
+                            Tip: use <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> to send a message. The server must permit your
+                            page's origin.
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="workspace">
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="label">Connection</div>
+                            <div id="metricState" class="value">Offline</div>
+                            <div id="metricStateSub" class="sub">Waiting to connect</div>
+                        </div>
+                        <div class="metric">
+                            <div class="label">Messages received</div>
+                            <div id="receivedCount" class="value">0</div>
+                            <div class="sub">Server → client</div>
+                        </div>
+                        <div class="metric">
+                            <div class="label">Messages sent</div>
+                            <div id="sentCount" class="value">0</div>
+                            <div class="sub">Client → server</div>
+                        </div>
+                        <div class="metric">
+                            <div class="label">Session duration</div>
+                            <div id="duration" class="value">00:00</div>
+                            <div class="sub">Current connection</div>
+                        </div>
+                    </div>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <h2>Message composer</h2>
+                            <div class="status-line">
+                                <span class="dot" id="composerDot"></span><span id="composerStatus">Connect to start sending</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="message-layout">
+                                <div>
+                                    <div class="field">
+                                        <label for="message">Payload <span class="hint">Text / JSON / UTF-8 binary</span></label
+                                        ><textarea
+                                            id="message"
+                                            class="control composer"
+                                            spellcheck="false"
+                                            placeholder='Type a message to send…&#10;&#10;Example JSON:&#10;{"type":"ping","timestamp":123456789}'></textarea>
+                                    </div>
+                                    <div class="composer-tools">
+                                        <select id="messageFormat" class="control" style="width: auto; min-width: 130px; padding: 8px 10px">
+                                            <option value="text">Plain text</option>
+                                            <option value="json">JSON payload</option>
+                                            <option value="binary">Binary (UTF-8)</option></select
+                                        ><button id="formatBtn" class="btn btn-quiet">✧ Format JSON</button><span class="spacer"></span
+                                        ><span id="payloadSize" class="tiny">0 bytes</span
+                                        ><button id="sendBtn" class="btn btn-primary" disabled>➤ Send message</button>
+                                    </div>
+                                </div>
+                                <div class="side-tools">
+                                    <button id="sampleBtn" class="btn btn-quiet">＋ Sample JSON</button
+                                    ><button id="clearComposerBtn" class="btn btn-quiet">⌫ Clear composer</button
+                                    ><button id="closeFrameBtn" class="btn btn-quiet" disabled>Send close frame</button>
+                                    <div class="footer-note">
+                                        Close frames are sent by calling <code>close()</code>. Browser APIs do not expose raw ping/pong frames.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div style="flex: 1">
+                                <h2>Event stream</h2>
+                                <small id="logSummary">0 events · Live connection telemetry</small>
+                            </div>
+                            <div class="log-tools">
+                                <input id="logSearch" class="control search" placeholder="Filter logs…" aria-label="Filter logs" />
+                                <select id="logFilter" class="control" style="width: auto; padding: 8px; font-size: 11px">
+                                    <option value="all">All events</option>
+                                    <option value="client">Client</option>
+                                    <option value="server">Server</option>
+                                    <option value="system">System</option>
+                                    <option value="error">Errors</option>
+                                </select>
+                                <button id="exportBtn" class="small-btn btn-quiet">Export</button>
+                                <button id="clearLogsBtn" class="small-btn btn-quiet">Clear</button>
+                            </div>
+                        </div>
+                        <div class="log-list" id="logList" aria-live="polite">
+                            <div class="empty" id="emptyState">
+                                <strong>Nothing in the stream yet</strong>Connect to a WebSocket server to inspect events and messages.
+                            </div>
+                        </div>
+                    </section>
+                    <div class="footer-note">
+                        SocketLab runs locally in this HTML page. “Server” entries are frames/events observed by this client, not server-side logs
+                        from your backend. For actual server logs, instrument your server or view its logging system. WebSocket does not provide a
+                        browser API for custom headers, raw ping/pong frames, or server internals.
+                    </div>
+                </section>
+            </main>
+        </div>
+        <div class="toast" id="toast" role="status"></div>
+
+        <script src="./index.js"></script>
+    </body>
+</html>
